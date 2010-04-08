@@ -113,7 +113,7 @@ class Haplotyper {
     rest filter { sequence => sequence.charAt(posn) == nucleotide }
   }
 
-  def findLocalMinimum(handledMutations : List[Mutation], remainingMutations : List[Mutation], rest : List[String]) = {
+  def findLocalMinimum(handledMutations : List[Mutation], remainingMutations : List[Mutation], rest : List[String]) : List[Mutation] = {
 
     val remaining = eliminateHaplotype(handledMutations.head, rest)
 
