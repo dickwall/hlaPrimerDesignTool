@@ -1,3 +1,4 @@
+import com.locusdev.hlatool.{Mutation, Haplotyper}
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 

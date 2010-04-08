@@ -40,6 +40,6 @@ object DbMhcParser {
       }
     }
 
-    data
+    data.toList
   }
 }
