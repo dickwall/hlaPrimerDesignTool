@@ -1,6 +1,6 @@
 package com.locusdev.hlatool
 
-import collection.mutable.ListBuffer
+import collection.mutable.{HashSet, ListBuffer}
 
 /**
  * Identify and optimize haplotypes
@@ -118,20 +118,22 @@ class Haplotyper {
   }
 
   def findLocalMinimum(handledMutations: List[Mutation], remainingMutations: List[Mutation],
-                       rest: List[String], signatures: ListBuffer[List[Mutation]]): ListBuffer[List[Mutation]] = {
+                       rest: List[String], signatures: HashSet[List[Mutation]]): HashSet[List[Mutation]] = {
 
     val remaining = eliminateHaplotype(handledMutations.head, rest)
 
+    println(handledMutations.length + ", " + remainingMutations.length);
 
     if (remaining.length > 0) {
       for (mutation <- remainingMutations) {
-        findLocalMinimum(remainingMutations.head :: handledMutations, remainingMutations.tail, remaining, signatures)
+        findLocalMinimum(mutation :: handledMutations, remainingMutations - mutation, remaining, signatures)
       }
     }
     else {
-      signatures.append(handledMutations)
-      signatures
+      signatures.addEntry(handledMutations.sort((m1, m2) => (m1.index < m2.index)))
     }
+
+    signatures
 
   }
 
@@ -141,16 +143,16 @@ class Haplotyper {
 
     val itHap = getHaplotype(sequence, mutationMap)
 
-    val signatures = new ListBuffer[List[Mutation]]
+    val signatures = new HashSet[List[Mutation]]
 
     // run through full list of possible positions
     for (mutation <- itHap) {
+      println("iteration")
       val restOfList = itHap - mutation
-      findLocalMinimum(List(mutation), restOfList, rest).sort((m1, m2) => (m1.index < m2.index), signatures)
+      findLocalMinimum(List(mutation), restOfList, rest, signatures)
     }
 
-    val uniques = Set[List[Mutation]]() ++ signatures
-    val uniqueList = List[List[Mutation]]() ++ uniques
+    val uniqueList = List[List[Mutation]]() ++ signatures
     uniqueList.sort((l1, l2) => l1.length < l2.length)
   }
 
