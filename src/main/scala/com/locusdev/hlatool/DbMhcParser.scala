@@ -2,11 +2,14 @@ package com.locusdev.hlatool
 
 import xml.XML
 import scala.collection._
+import mutable.HashMap
 
 /**
  *
  * The dbMHC database provides an open, publicly accessible platform for DNA and clinical data related to the
  * human Major Histocompatibility Complex
+ *
+ * http://www.ncbi.nlm.nih.gov/gv/mhc/main.cgi?cmd=init
  *
  * This is a simple parser/dataExtractor for the dbMHC XML format
  *
@@ -16,7 +19,18 @@ import scala.collection._
  */
 
 object DbMhcParser {
-  def extractSequence(reader: java.io.Reader, locus: String, dnaBlock: String) = {
+  /**
+   * Extracts and pre-processes sequence from the dbMHC xml file
+   *
+   * @param reader a reader into the dbMHC xml file
+   * @param locus The locus we're interested in
+   * @param dnaBlock the dna block (Exon1, Exon2, etc) we're interested in
+   * @param relevantCharacters the number of characters that are relevant in the haplotype name. When there's more than
+   * one haplotype that shares the same first characters in its name, the entries will be combined into one and the mutations
+   * that are different between them will be redacted.  If there's nothing to redact, relevantCharacters should be passed in
+   * as 0
+   */
+  def extractSequence(reader: java.io.Reader, locus: String, dnaBlock: String, relevantCharacters: int) = {
     val start = System.currentTimeMillis;
 
     println("parsing dbHMC xml")
@@ -27,7 +41,7 @@ object DbMhcParser {
       allele => (allele \ "locus" \ "name").text.equals(locus)
     }
 
-    val data = new mutable.ListBuffer[(String, String)]
+    var data = immutable.Map[String, String]()
 
     for (allele <- alleles) {
       val name = (allele \ "name").text
@@ -35,11 +49,45 @@ object DbMhcParser {
       for (block <- blocks) {
         val blockName = (block \ "name").text
         if (blockName.equals(dnaBlock)) {
-          data += (name, (block \ "sequence").text)
+          val sequence = (block \ "sequence").text
+          //ensure sequence uniqueness
+          data += name -> sequence
         }
       }
     }
+    println("parsed " + data.size + " enries");
 
-    data.toList
+    redact(data, relevantCharacters)
+  }
+
+  def redact(data: Map[String, String], relevantCharacters: int) = {
+    //group together all the alleles that share the same relevant characters in a name
+    val grouped = new HashMap[String, mutable.Set[String]] with mutable.MultiMap[String, String]
+
+    data.foreach {entry => grouped add (entry._1.substring(0, relevantCharacters), entry._2)}
+    //now, fold all the individual lists and redact all of the mutations that are not shared
+
+    val redacted = new mutable.HashMap[String, String]
+
+    grouped.foreach {
+      entry =>
+        val redactedSequence = entry._2.reduceLeft {
+          (x: String, y: String) =>
+            var consensus = ""
+
+            for (i <- 0 to (x.length -1)) {
+              if (x.charAt(i) == y.charAt(i)) {
+                consensus += x.charAt(i)
+              }
+              else {
+                consensus += Haplotyper.redactedMutation
+              }
+            }
+            consensus
+        }
+        println(entry._1 + " = " + redactedSequence)
+        redacted += entry._1 -> redactedSequence
+    }
+    redacted
   }
 }
