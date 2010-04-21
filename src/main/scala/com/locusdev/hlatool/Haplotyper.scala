@@ -1,6 +1,7 @@
 package com.locusdev.hlatool
 
 import collection.mutable.{HashSet, ListBuffer}
+import collection.immutable.Set
 
 /**
  * Identify and optimize haplotypes
@@ -83,7 +84,9 @@ class Haplotyper {
     var mmap = Map[Int, Set[Char]]()
 
     for (i <- 0 to (mutationList.length - 1)) {
-      if (mutationList(i).size > 1) mmap += i -> mutationList(i)
+      //filter out redacted mutations
+      val mutations: Set[Char] = mutationList(i) - Haplotyper.redactedMutation - '*'
+      if (mutations.size > 1) mmap += i -> mutations
     }
 
     mmap
@@ -118,19 +121,24 @@ class Haplotyper {
   }
 
   def findLocalMinimum(handledMutations: List[Mutation], remainingMutations: List[Mutation],
-                       rest: List[String], signatures: HashSet[List[Mutation]]): HashSet[List[Mutation]] = {
+                       rest: List[String], signatures: HashSet[List[Mutation]], howDeep: int): HashSet[List[Mutation]] = {
 
-    val remaining = eliminateHaplotype(handledMutations.head, rest)
+    println(howDeep)
+    if (howDeep <= Haplotyper.maxChainLength) {
 
-    println(handledMutations.length + ", " + remainingMutations.length);
 
-    if (remaining.length > 0) {
-      for (mutation <- remainingMutations) {
-        findLocalMinimum(mutation :: handledMutations, remainingMutations - mutation, remaining, signatures)
+      val remaining = eliminateHaplotype(handledMutations.head, rest)
+
+      println(handledMutations.length + ", " + remainingMutations.length);
+
+      if (remaining.length > 0) {
+        for (mutation <- remainingMutations) {
+          findLocalMinimum(mutation :: handledMutations, remainingMutations - mutation, remaining, signatures, howDeep + 1)
+        }
       }
-    }
-    else {
-      signatures.addEntry(handledMutations.sort((m1, m2) => (m1.index < m2.index)))
+      else {
+        signatures.addEntry(handledMutations.sort((m1, m2) => (m1.index < m2.index)))
+      }
     }
 
     signatures
@@ -149,7 +157,7 @@ class Haplotyper {
     for (mutation <- itHap) {
       println("iteration")
       val restOfList = itHap - mutation
-      findLocalMinimum(List(mutation), restOfList, rest, signatures)
+      findLocalMinimum(List(mutation), restOfList, rest, signatures, 0)
     }
 
     val uniqueList = List[List[Mutation]]() ++ signatures
@@ -169,5 +177,7 @@ object Haplotyper {
    * In the process of building a consensus sequence between sequences that are, for our intents and purposes, the same,
    * certain mutations will be redacted.
    */
-  val redactedMutation = '&'
+  val redactedMutation = '*'
+
+  val maxChainLength = 5;
 }
