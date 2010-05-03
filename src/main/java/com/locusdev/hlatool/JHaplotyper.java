@@ -203,10 +203,10 @@ public class JHaplotyper {
 
 
     public static void main(String[] args) throws FileNotFoundException {
-        String[] blocks = {"Exon2", "Exon3"};
+        //String[] blocks = {"Exon2", "Exon3"};
         scala.collection.Map<String, String> data = DbMhcParser.extractSequence(
                 new FileReader("/Users/alexfurman/projects/hlaPrimerDesignTool/src/main/resources/dbMHC_allelev2.28.xml"),
-                "HLA-B", blocks, 0);
+                "HLA-B", "Exon3", 0);
         Haplotyper haplotyper = new Haplotyper();
         scala.collection.immutable.Map<Integer, scala.collection.immutable.Set<Character>> mutations =
                 haplotyper.mutationMap(haplotyper.findAllMutations(data.values().toList()));

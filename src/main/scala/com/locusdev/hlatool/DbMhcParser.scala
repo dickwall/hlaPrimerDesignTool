@@ -30,7 +30,7 @@ object DbMhcParser {
    * that are different between them will be redacted.  If there's nothing to redact, relevantCharacters should be passed in
    * as 0
    */
-  def extractSequence(reader: java.io.Reader, locus: String, dnaBlock: Array[String], relevantCharacters: int) = {
+  def extractSequence(reader: java.io.Reader, locus: String, dnaBlock: String, relevantCharacters: int) = {
     val start = System.currentTimeMillis;
 
     println("parsing dbHMC xml")
