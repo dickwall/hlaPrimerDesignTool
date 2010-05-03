@@ -8,6 +8,8 @@ package com.locusdev.blast
  * Time: 2:45:33 PM
  */
 
-object FASTAGenerator{
-  
+object FASTAGenerator {
+  def main(args: Array[String]) {
+
+  }
 }
