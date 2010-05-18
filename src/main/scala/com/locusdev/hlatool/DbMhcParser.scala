@@ -30,7 +30,7 @@ object DbMhcParser {
    * that are different between them will be redacted.  If there's nothing to redact, relevantCharacters should be passed in
    * as 0
    */
-  def extractSequence(reader: java.io.Reader, locus: String, dnaBlock: String, relevantCharacters: int) = {
+  def extractSequence(reader: java.io.Reader, locus: String, dnaBlock: String, relevantCharacters: Int) = {
     val start = System.currentTimeMillis;
 
     println("parsing dbHMC xml")
@@ -60,34 +60,43 @@ object DbMhcParser {
     redact(data, relevantCharacters)
   }
 
-  def redact(data: Map[String, String], relevantCharacters: int) = {
-    //group together all the alleles that share the same relevant characters in a name
-    val grouped = new HashMap[String, mutable.Set[String]] with mutable.MultiMap[String, String]
-
-    data.foreach {entry => grouped add (entry._1.substring(0, relevantCharacters), entry._2)}
-    //now, fold all the individual lists and redact all of the mutations that are not shared
-
-    val redacted = new mutable.HashMap[String, String]
-
-    grouped.foreach {
-      entry =>
-        val redactedSequence = entry._2.reduceLeft {
-          (x: String, y: String) =>
-            var consensus = ""
-
-            for (i <- 0 to (x.length -1)) {
-              if (x.charAt(i) == y.charAt(i)) {
-                consensus += x.charAt(i)
-              }
-              else {
-                consensus += Haplotyper.redactedMutation
-              }
-            }
-            consensus
-        }
-        println(entry._1 + " = " + redactedSequence)
-        redacted += entry._1 -> redactedSequence
+  def redact(data: Map[String, String], relevantCharacters: Int) = {
+    if (relevantCharacters == 0) {
+      data
     }
-    redacted
+    else {
+      //group together all the alleles that share the same relevant characters in a name
+      val grouped = new HashMap[String, mutable.Set[String]] with mutable.MultiMap[String, String]
+
+      data.foreach {entry => grouped add (entry._1.substring(0, relevantCharacters), entry._2)}
+      //now, fold all the individual lists and redact all of the mutations that are not shared
+
+      val redacted = new mutable.HashMap[String, String]
+      val sequenceSet = new mutable.HashSet[String]
+
+      grouped.foreach {
+        entry =>
+          val redactedSequence = entry._2.reduceLeft {
+            (x: String, y: String) =>
+              var consensus = ""
+
+              for (i <- 0 to (x.length - 1)) {
+                if (x.charAt(i) == y.charAt(i)) {
+                  consensus += x.charAt(i)
+                }
+                else {
+                  consensus += Haplotyper.redactedMutation
+                }
+              }
+              consensus
+          }
+
+          if (!(sequenceSet contains redactedSequence)) {
+            println(entry._1 + "=" + redactedSequence)
+            redacted += entry._1 -> redactedSequence
+          }
+      }
+      redacted
+    }
   }
 }
