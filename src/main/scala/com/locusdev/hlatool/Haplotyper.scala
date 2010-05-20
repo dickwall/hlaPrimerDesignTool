@@ -30,9 +30,9 @@ class Haplotyper {
    * @param seq2 a second string sequence to compare to the first
    * @return an array of set is  of chars with the possible nucleotides at each position in the sequence
    */
-  def extractMutationSets(seq1: String, seq2: String): Array[Set[Char]] = {
+  def extractMutationSets(seq1: String, seq2: String): IndexedSeq[Set[Char]] = {
     ensureMatchingLength(seq1, seq2)
-    val zipped = seq1.toArray zip seq2.toArray
+    val zipped = seq1 zip seq2
     zipped map {case (allele1, allele2) => Set(allele1, allele2)}
   }
 
@@ -43,7 +43,7 @@ class Haplotyper {
    * @param mset2 as for mset1, the mutation set that will be merged in
    * @return a new array of sets of chars with the possible nucleotides at each position in the sequence
    */
-  def combineMutationSets(mset1: Array[Set[Char]], mset2: Array[Set[Char]]) = {
+  def combineMutationSets(mset1: IndexedSeq[Set[Char]], mset2: IndexedSeq[Set[Char]]) = {
     ensureMatchingLength(mset1, mset2)
     val zipped = mset1 zip mset2
     zipped map {case (set1, set2) => set1 ++ set2}
@@ -55,7 +55,7 @@ class Haplotyper {
    * @param sequences, the list of all possible sequences for a region of interest
    * @return an array of sets of characters for each position in the sequence, along with the possible nucleotides there
    */
-  def findAllMutations(sequences: List[String]): Array[Set[Char]] = {
+  def findAllMutations(sequences: List[String]): IndexedSeq[Set[Char]] = {
     val (first: List[String], second: List[String]) = {
       if (sequences.length % 2 == 0) (sequences.splitAt(sequences.length / 2))
       else {
@@ -68,7 +68,7 @@ class Haplotyper {
     val zipped = first zip second
     val pairedMutations = zipped map {case (s1, s2) => extractMutationSets(s1, s2)}
 
-    if (pairedMutations == Nil) Array()
+    if (pairedMutations == Nil) IndexedSeq()
     else pairedMutations reduceLeft {combineMutationSets(_, _)}
   }
 
@@ -80,7 +80,7 @@ class Haplotyper {
    * @return a map of the index of any locations with more than one possible nucleotide, to a set of nucleotides
    * that can be at that position.
    */
-  def mutationMap(mutationList: Array[Set[Char]]) = {
+  def mutationMap(mutationList: IndexedSeq[Set[Char]]) = {
     var mmap = Map[Int, Set[Char]]()
 
     for (i <- 0 to (mutationList.length - 1)) {
@@ -121,7 +121,7 @@ class Haplotyper {
   }
 
   def findLocalMinimum(handledMutations: List[Mutation], remainingMutations: List[Mutation],
-                       rest: List[String], signatures: HashSet[List[Mutation]], howDeep: int): HashSet[List[Mutation]] = {
+                       rest: List[String], signatures: HashSet[List[Mutation]], howDeep: Int): HashSet[List[Mutation]] = {
 
     println(howDeep)
     if (howDeep <= Haplotyper.maxChainLength) {
@@ -133,11 +133,11 @@ class Haplotyper {
 
       if (remaining.length > 0) {
         for (mutation <- remainingMutations) {
-          findLocalMinimum(mutation :: handledMutations, remainingMutations - mutation, remaining, signatures, howDeep + 1)
+          findLocalMinimum(mutation :: handledMutations, remainingMutations.filterNot(_ == mutation), remaining, signatures, howDeep + 1)
         }
       }
       else {
-        signatures.addEntry(handledMutations.sort((m1, m2) => (m1.index < m2.index)))
+        signatures.addEntry(handledMutations.sortWith((m1, m2) => (m1.index < m2.index)))
       }
     }
 
@@ -156,12 +156,12 @@ class Haplotyper {
     // run through full list of possible positions
     for (mutation <- itHap) {
       println("iteration")
-      val restOfList = itHap - mutation
+      val restOfList = itHap.filterNot(_ == mutation)
       findLocalMinimum(List(mutation), restOfList, rest, signatures, 0)
     }
 
     val uniqueList = List[List[Mutation]]() ++ signatures
-    uniqueList.sort((l1, l2) => l1.length < l2.length)
+    uniqueList.sortWith((l1, l2) => l1.length < l2.length)
   }
 
 }

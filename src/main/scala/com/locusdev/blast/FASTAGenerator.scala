@@ -33,7 +33,7 @@ object FASTAGenerator {
     }
 
     //open the file
-    val lines = io.Source.fromFile(args(0)).getLines;
+    val lines = io.Source.fromPath(args(0)).getLines("\n")
     val parsed: List[scala.collection.Map[String, String]] = CSVParser.parse(lines, "\t");
 
     parsed.foreach {

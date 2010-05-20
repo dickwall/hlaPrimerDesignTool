@@ -20,7 +20,7 @@ object App {
 
     val mutations = haplotyper.findAllMutations(list)
 
-    for(signature <- haplotyper.findAllUniqueSignatures(signature, list - signature, haplotyper.mutationMap(mutations))){
+    for(signature <- haplotyper.findAllUniqueSignatures(signature, list.filterNot(_ == signature), haplotyper.mutationMap(mutations))){
       println(signature.length + ": " + signature)
     }
 

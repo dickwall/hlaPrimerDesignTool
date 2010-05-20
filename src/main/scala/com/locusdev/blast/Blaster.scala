@@ -64,7 +64,7 @@ object Blaster {
         }
 
         //now get the number of rows from the output file, that is out hit score
-        val lines = io.Source.fromFile(outputDir + File.separator + outName).getLines.toList;
+        val lines = io.Source.fromPath(outputDir + File.separator + outName).getLines("\n")
         val summary = primer1 + "\t" + primer2 + "\t" + lines.length
         summaryWriter.println(summary)
         summaryWriter.flush
