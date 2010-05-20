@@ -50,19 +50,19 @@ public class JHaplotyper {
 
     private void findAnswer(String allelePrefix) {
         //first, pull out all of the alleles that match the prefix we care about
-        final List<Allele> alleles = getMatchingAlleles(allelePrefix);
+        final List<JAllele> alleles = getMatchingAlleles(allelePrefix);
         if (alleles.size() == 0) {
             throw new IllegalStateException("Not alleles start with prefix: " + allelePrefix);
         }
 
-        final List<Allele> otherAlleles = getNonMatchingAlleles(allelePrefix);
+        final List<JAllele> otherAlleles = getNonMatchingAlleles(allelePrefix);
 
         //now, get the mutations that these alleles have in common
         List<JMutation> commonMutations = getCommonMutations(alleles);
 
         //now, ensure that the common mutations will uniquely identify alleles that are in this group
-        List<Allele> alsoMatches = new ArrayList<Allele>();
-        for (Allele allele : otherAlleles) {
+        List<JAllele> alsoMatches = new ArrayList<JAllele>();
+        for (JAllele allele : otherAlleles) {
             if (allele.matchesMutations(commonMutations)) {
                 alsoMatches.add(allele);
             }
@@ -71,7 +71,19 @@ public class JHaplotyper {
             throw new IllegalStateException("Common mutations for group \"" + allelePrefix + "\" also matches " +
                     alsoMatches);
         }
+        final Map<JMutation, Integer> mutationFrequencies = getMutationFrequencies(otherAlleles, commonMutations);
 
+        sortByMutationFrequencies(otherAlleles, commonMutations);
+
+        //guess at answer using a greedy algorithm
+        List<JMutation> guess = greedyGuessAnswer(commonMutations, otherAlleles);
+
+        System.out.println("Guess: (" + guess.size() + ") - " + guess);
+
+
+    }
+
+    private List<JMutation> sortByMutationFrequencies(List<JAllele> otherAlleles, List<JMutation> commonMutations) {
         //now, we can figure out how common each of the mutations is in the general data
         final Map<JMutation, Integer> mutationFrequencies = getMutationFrequencies(otherAlleles, commonMutations);
         //sort the mutations according to how rare they are in the alleles
@@ -86,25 +98,24 @@ public class JHaplotyper {
         //print 10 least frequent mutations
         printFirst10(commonMutations, mutationFrequencies);
 
-        //guess at answer using a greedy algorithm
-        List<JMutation> guess = greedyGuessAnswer(commonMutations, otherAlleles, mutationFrequencies);
-
-        System.out.println("Guess: " + guess);
-
-
+        return commonMutations;
     }
 
-    private List<JMutation> greedyGuessAnswer(List<JMutation> commonMutations, List<Allele> otherAlleles,
-                                              Map<JMutation, Integer> mutationFrequencies) {
+    private List<JMutation> greedyGuessAnswer(List<JMutation> mutations, List<JAllele> alleles) {
         List<JMutation> guess = new ArrayList<JMutation>();
 
         //copy the other alleles into a separate list we're going to be messing with
-        List<Allele> allelesLeft = new ArrayList<Allele>(otherAlleles.size());
-        allelesLeft.addAll(otherAlleles);
+        List<JAllele> allelesLeft = new ArrayList<JAllele>(alleles.size());
+        allelesLeft.addAll(alleles);
+
+        //copy the mutations into a separate list
+        List<JMutation> commonMutations = new ArrayList<JMutation>(mutations.size());
+        commonMutations.addAll(mutations);
 
         int index = 0;
-        while (allelesLeft.size() != 0 && index < commonMutations.size()) {
-            guess.add(commonMutations.get(index++));
+        while (allelesLeft.size() != 0 && index < mutations.size()) {
+            sortByMutationFrequencies(allelesLeft, commonMutations);
+            guess.add(commonMutations.remove(0));
             allelesLeft = eliminateAlleles(guess, allelesLeft);
         }
         return guess;
@@ -118,11 +129,11 @@ public class JHaplotyper {
         }
     }
 
-    private Map<JMutation, Integer> getMutationFrequencies(List<Allele> alleles, List<JMutation> mutations) {
+    private Map<JMutation, Integer> getMutationFrequencies(List<JAllele> alleles, List<JMutation> mutations) {
         Map<JMutation, Integer> mutationFrequencies = new HashMap<JMutation, Integer>();
         for (JMutation commonMutation : mutations) {
             int mutationCounter = 0;
-            for (Allele otherAllele : alleles) {
+            for (JAllele otherAllele : alleles) {
                 if (otherAllele.matchesMutation(commonMutation)) {
                     mutationCounter++;
                 }
@@ -132,13 +143,13 @@ public class JHaplotyper {
         return mutationFrequencies;
     }
 
-    private List<JMutation> getCommonMutations(final List<Allele> alleles) {
+    private List<JMutation> getCommonMutations(final List<JAllele> alleles) {
         ArrayList<Integer> indexes = Lists.newArrayList(Iterables.filter(sortedIndexes, new Predicate<Integer>() {
             public boolean apply(Integer input) {
                 if (input == null) {
                     return false;
                 }
-                Allele first = alleles.get(0);
+                JAllele first = alleles.get(0);
 
                 if (alleles.size() == 1) {
                     return first.baseSequenced(input);
@@ -163,27 +174,27 @@ public class JHaplotyper {
      * @param allelePrefix prefix for the allele name (e.g. B*1234)
      * @return list of all alleles that match the prefix
      */
-    private List<Allele> getMatchingAlleles(String allelePrefix) {
-        List<Allele> alleles = new ArrayList<Allele>();
+    private List<JAllele> getMatchingAlleles(String allelePrefix) {
+        List<JAllele> alleles = new ArrayList<JAllele>();
         for (Map.Entry<String, String> entry : data.entrySet()) {
             if (entry.getKey().startsWith(allelePrefix)) {
-                alleles.add(new Allele(entry.getKey(), entry.getValue()));
+                alleles.add(new JAllele(entry.getKey(), entry.getValue()));
             }
         }
         return alleles;
     }
 
-    private List<Allele> getNonMatchingAlleles(String allelePrefix) {
-        List<Allele> alleles = new ArrayList<Allele>();
+    private List<JAllele> getNonMatchingAlleles(String allelePrefix) {
+        List<JAllele> alleles = new ArrayList<JAllele>();
         for (Map.Entry<String, String> entry : data.entrySet()) {
             if (!entry.getKey().startsWith(allelePrefix)) {
-                alleles.add(new Allele(entry.getKey(), entry.getValue()));
+                alleles.add(new JAllele(entry.getKey(), entry.getValue()));
             }
         }
         return alleles;
     }
 
-    private List<JMutation> extractMutations(Allele allele, List<Integer> mutationIndexes) {
+    private List<JMutation> extractMutations(JAllele allele, List<Integer> mutationIndexes) {
         List<JMutation> mutations = new ArrayList<JMutation>(mutationIndexes.size());
         for (Integer mutationIndexe : mutationIndexes) {
             mutations.add(new JMutation(mutationIndexe, allele.getNucleotide(mutationIndexe)));
@@ -191,9 +202,9 @@ public class JHaplotyper {
         return mutations;
     }
 
-    private List<Allele> eliminateAlleles(List<JMutation> mutations, List<Allele> alleles) {
-        List<Allele> filtered = new ArrayList<Allele>();
-        for (Allele allele : alleles) {
+    private List<JAllele> eliminateAlleles(List<JMutation> mutations, List<JAllele> alleles) {
+        List<JAllele> filtered = new ArrayList<JAllele>();
+        for (JAllele allele : alleles) {
             if (JMutation.matches(allele, mutations)) {
                 filtered.add(allele);
             }
@@ -203,10 +214,10 @@ public class JHaplotyper {
 
 
     public static void main(String[] args) throws FileNotFoundException {
-        //String[] blocks = {"Exon2", "Exon3"};
+        String[] blocks = {"Exon2", "Exon3"};
         scala.collection.Map<String, String> data = DbMhcParser.extractSequence(
                 new FileReader("/Users/alexfurman/projects/hlaPrimerDesignTool/src/main/resources/dbMHC_allelev2.28.xml"),
-                "HLA-B", "Exon3", 0);
+                "HLA-B", blocks, 0);
         Haplotyper haplotyper = new Haplotyper();
         scala.collection.immutable.Map<Integer, scala.collection.immutable.Set<Character>> mutations =
                 haplotyper.mutationMap(haplotyper.findAllMutations(data.values().toList()));
@@ -229,7 +240,7 @@ public class JHaplotyper {
             }
         }
 
-        new JHaplotyper(map, ScalaToJava.convertMutations(mutations)).findAnswer("B*1821");
+        new JHaplotyper(map, ScalaToJava.convertMutations(mutations)).findAnswer("B*1507");
 
 
     }

@@ -3,6 +3,7 @@ package com.locusdev.hlatool
 import xml.XML
 import scala.collection._
 import mutable.HashMap
+import java.lang.String
 
 /**
  *
@@ -30,8 +31,9 @@ object DbMhcParser {
    * that are different between them will be redacted.  If there's nothing to redact, relevantCharacters should be passed in
    * as 0
    */
-  def extractSequence(reader: java.io.Reader, locus: String, dnaBlock: String, relevantCharacters: Int) = {
+  def extractSequence(reader: java.io.Reader, locus: String, dnaBlock: Array[String], relevantCharacters: Int) = {
     val start = System.currentTimeMillis;
+
 
     println("parsing dbHMC xml")
     val xml = XML load reader
@@ -48,55 +50,18 @@ object DbMhcParser {
       val blocks = allele \ "blocks" \ "block"
       for (block <- blocks) {
         val blockName = (block \ "name").text
-        if (blockName.equals(dnaBlock)) {
-          val sequence = (block \ "sequence").text
-          //ensure sequence uniqueness
-          data += name -> sequence
+        if (dnaBlock contains blockName) {
+          //if (blockName.equals(dnaBlock)) {
+          var sequence = (block \ "sequence").text
+          if (data contains name) {
+            sequence = data(name) + sequence
+          }
+            data += name -> sequence
+
         }
       }
     }
     println("parsed " + data.size + " enries");
-
-    redact(data, relevantCharacters)
-  }
-
-  def redact(data: Map[String, String], relevantCharacters: Int) = {
-    if (relevantCharacters == 0) {
-      data
-    }
-    else {
-      //group together all the alleles that share the same relevant characters in a name
-      val grouped = new HashMap[String, mutable.Set[String]] with mutable.MultiMap[String, String]
-
-      data.foreach {entry => grouped add (entry._1.substring(0, relevantCharacters), entry._2)}
-      //now, fold all the individual lists and redact all of the mutations that are not shared
-
-      val redacted = new mutable.HashMap[String, String]
-      val sequenceSet = new mutable.HashSet[String]
-
-      grouped.foreach {
-        entry =>
-          val redactedSequence = entry._2.reduceLeft {
-            (x: String, y: String) =>
-              var consensus = ""
-
-              for (i <- 0 to (x.length - 1)) {
-                if (x.charAt(i) == y.charAt(i)) {
-                  consensus += x.charAt(i)
-                }
-                else {
-                  consensus += Haplotyper.redactedMutation
-                }
-              }
-              consensus
-          }
-
-          if (!(sequenceSet contains redactedSequence)) {
-            println(entry._1 + "=" + redactedSequence)
-            redacted += entry._1 -> redactedSequence
-          }
-      }
-      redacted
-    }
+    data
   }
 }
