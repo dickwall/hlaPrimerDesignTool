@@ -10,7 +10,7 @@ import java.io.FileReader
 object App {
   def main(args: Array[String]) {
     val data = DbMhcParser.extractSequence(new FileReader("/Users/alexfurman/projects/hlaPrimerDesignTool/src/main/resources/dbMHC_allelev2.28.xml"),
-      "HLA-B", "Exon3", 6)
+      "HLA-B", Array("Exon2", "Exon3"), 6)
 
     val haplotyper = new Haplotyper
 

@@ -7,11 +7,11 @@ import java.util.List;
  * Date: Apr 21, 2010
  * Time: 2:32:05 PM
  */
-public class Allele {
+public class JAllele {
     private String name;
     private String sequence;
 
-    public Allele(String name, String sequence) {
+    public JAllele(String name, String sequence) {
         this.name = name;
         this.sequence = sequence;
     }
@@ -51,7 +51,7 @@ public class Allele {
 
     @Override
     public String toString() {
-        return "Allele{" +
+        return "JAllele{" +
                 "name='" + name + '\'' +
                 '}';
     }

@@ -28,10 +28,10 @@ public class JMutation implements Comparable<JMutation> {
 
     @Override
     public String toString() {
-        return "JMutation{" +
-                "index=" + index +
-                ", nucleotide=" + nucleotide +
-                '}';
+        return "[" +
+                index +
+                ":" + nucleotide +
+                ']';
     }
 
     public boolean matches(String sequence) {
@@ -53,7 +53,7 @@ public class JMutation implements Comparable<JMutation> {
         return getIndex().compareTo(o.getIndex());
     }
 
-    public static boolean matches(Allele allele, List<JMutation> mutations) {
+    public static boolean matches(JAllele allele, List<JMutation> mutations) {
         return matches(allele.getSequence(), mutations);
     }
 }
