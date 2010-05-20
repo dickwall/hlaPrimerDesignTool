@@ -1,6 +1,7 @@
 package com.locusdev.hlatool;
 
-import scala.Iterator;
+import scala.collection.Iterable;
+import scala.collection.Iterator;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +19,7 @@ public class ScalaToJava {
     public static Map<Integer, Set<Character>> convertMutations(scala.collection.immutable.Map<Integer, scala.collection.immutable.Set<Character>> mutations) {
         Map<Integer, Set<Character>> converted = new HashMap<Integer, Set<Character>>();
 
-        Iterator<Integer> keys = mutations.keys();
+        Iterator<Integer> keys = mutations.keys().iterate();
         while (keys.hasNext()) {
             Integer key = (Integer) keys.next();
             scala.collection.immutable.Set value = (scala.collection.immutable.Set) mutations.get(key).get();

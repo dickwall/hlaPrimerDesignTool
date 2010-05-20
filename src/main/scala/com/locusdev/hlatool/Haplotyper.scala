@@ -164,6 +164,60 @@ class Haplotyper {
     uniqueList.sortWith((l1, l2) => l1.length < l2.length)
   }
 
+  def findAnswer(data : Map[String, String], mutationMap : Map[Int, Set[Char]], allelePrefix : String) = {
+    // partition by matching prefix or not
+    val allelesList = data.map { case(k,v) => Allele(k, v) }
+    val (includedAlleles, excludedAlleles) = allelesList.partition( allele => allele.name.startsWith(allelePrefix))
+
+    val sortedIndices = mutationMap.keys.toList.sorted
+
+    if (includedAlleles.size == 0) throw new IllegalStateException("No matching alleles for " + allelePrefix)
+
+    val firstAllele = includedAlleles.head
+
+    val filteredIndices = sortedIndices filter { index =>
+      if (!(firstAllele baseSequenced index)) false
+      else {
+         !includedAlleles.tail.exists { otherAllele => firstAllele.sequence.charAt(index) != otherAllele.sequence.charAt(index) }
+      }
+    }
+
+    val commonMutationsForIncluded = filteredIndices.map { index => Mutation(index, firstAllele.sequence.charAt(index)) }
+
+    val matchesOthers = excludedAlleles filter { otherAllele => otherAllele.matches(commonMutationsForIncluded) }
+    if (!(matchesOthers.isEmpty)) throw new IllegalStateException("Common mutations for group " + allelePrefix + " also matches " + matchesOthers)
+
+    greedyGuess(commonMutationsForIncluded, excludedAlleles.toList)
+  }
+
+  def greedyGuess(mutations : List[Mutation], excludedAlleles : List[Allele], runningAnswer : List[Mutation] = Nil) : List[Mutation] = {
+
+    excludedAlleles.size match {
+      case 0 => runningAnswer
+      case _ => {
+        val resorted = sortByMutationFrequencies(mutations, excludedAlleles)
+        val answer = resorted.head :: runningAnswer
+        greedyGuess(resorted.tail, eliminateAlleles(answer, excludedAlleles), answer)
+      }
+    }
+
+  }
+
+  def eliminateAlleles(mutations : List[Mutation], alleles : List[Allele]) = {
+    alleles filter { _ matches mutations }
+  }
+
+  def sortByMutationFrequencies(mutations : List[Mutation], alleles : List[Allele]) = {
+    val mutationsWithFrequency = mutations map { mutation =>
+      (mutation, (alleles filter { allele => allele.matches(mutation) }).size)
+    }
+
+    val sortedMutationsWithFrequency = mutationsWithFrequency.sortBy { _._2 }
+
+    println(sortedMutationsWithFrequency.slice(0,10))
+
+    sortedMutationsWithFrequency map { _._1 }
+  }
 }
 
 /**

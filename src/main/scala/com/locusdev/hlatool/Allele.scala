@@ -8,4 +8,15 @@ package com.locusdev.hlatool
  * To change this template use File | Settings | File Templates.
  */
 
-class Allele
+case class Allele(name : String, sequence : String) {
+  def baseSequenced(index : Int) = {
+    if (sequence.length < index - 1) throw new IllegalArgumentException(this + " sequence out of bounds: " + index + ", length: " + sequence.length)
+    sequence.charAt(index) != '*'
+  }
+
+  def matches(mutations : List[Mutation]) : Boolean = {
+    !(mutations exists { mutation => !matches(mutation) })
+  }
+
+  def matches(mutation : Mutation) : Boolean = (sequence.charAt(mutation.index) == mutation.nucleotide)
+}

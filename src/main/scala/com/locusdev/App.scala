@@ -9,21 +9,20 @@ import java.io.FileReader
  */
 object App {
   def main(args: Array[String]) {
-    val data = DbMhcParser.extractSequence(new FileReader("/Users/alexfurman/projects/hlaPrimerDesignTool/src/main/resources/dbMHC_allelev2.28.xml"),
+    val data = DbMhcParser.extractSequence(new FileReader("/home/dick/dev/Scala/LocusDev/hlaPrimerDesignTool/src/main/resources/dbMHC_allelev2.28.xml"),
       "HLA-B", Array("Exon2", "Exon3"), 6)
 
     val haplotyper = new Haplotyper
 
-    val signature = data("B*0766")
+    //val signature = data("B*0766")
 
     var list = data.values.toList
 
     val mutations = haplotyper.findAllMutations(list)
 
-    for(signature <- haplotyper.findAllUniqueSignatures(signature, list.filterNot(_ == signature), haplotyper.mutationMap(mutations))){
-      println(signature.length + ": " + signature)
-    }
+    val mmap = haplotyper.mutationMap(mutations)
 
-    println(data)
+    println("Answer: " + haplotyper.findAnswer(data, mmap, "B*1507"))
+
   }
 }
