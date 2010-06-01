@@ -113,19 +113,16 @@ class Haplotyper {
     haplotypeList.readOnly
   }
 
-  def eliminateHaplotype(mutation: Mutation, rest: List[String]) = {
-    val posn = mutation.index
-    val nucleotide = mutation.nucleotide
+  
+  def eliminateHaplotype(mutation: Mutation, rest: List[String]) = 
+      rest filter {sequence => sequence.charAt(mutation.index) == mutation.nucleotide}
 
-    rest filter {sequence => sequence.charAt(posn) == nucleotide}
-  }
-
+      
   def findLocalMinimum(handledMutations: List[Mutation], remainingMutations: List[Mutation],
                        rest: List[String], signatures: HashSet[List[Mutation]], howDeep: Int): HashSet[List[Mutation]] = {
 
     println(howDeep)
     if (howDeep <= Haplotyper.maxChainLength) {
-
 
       val remaining = eliminateHaplotype(handledMutations.head, rest)
 
@@ -142,7 +139,6 @@ class Haplotyper {
     }
 
     signatures
-
   }
 
 
@@ -166,16 +162,20 @@ class Haplotyper {
 
   def findAnswer(data : Map[String, String], mutationMap : Map[Int, Set[Char]], allelePrefix : String) = {
     // partition by matching prefix or not
+    // first, convert the map to a list of Allele case class instances
     val allelesList = data.map { case(k,v) => Allele(k, v) }
+    // split into included and excluded alleles, by matching the allele prefix
     val (includedAlleles, excludedAlleles) = allelesList.partition( allele => allele.name.startsWith(allelePrefix))
-
+    // sort the indices of the mutation map numerically by key
     val sortedIndices = mutationMap.keys.toList.sorted
 
+    // if there aren't any alleles included - we can go no further
     if (includedAlleles.size == 0) throw new IllegalStateException("No matching alleles for " + allelePrefix)
 
     val firstAllele = includedAlleles.head
 
     val filteredIndices = sortedIndices filter { index =>
+      // don't include if the allele is a base sequence (identified as "*")
       if (!(firstAllele baseSequenced index)) false
       else {
          !includedAlleles.tail.exists { otherAllele => firstAllele.sequence.charAt(index) != otherAllele.sequence.charAt(index) }
@@ -190,6 +190,7 @@ class Haplotyper {
     greedyGuess(commonMutationsForIncluded, excludedAlleles.toList)
   }
 
+  
   def greedyGuess(mutations : List[Mutation], excludedAlleles : List[Allele], runningAnswer : List[Mutation] = Nil) : List[Mutation] = {
 
     excludedAlleles.size match {
@@ -203,9 +204,8 @@ class Haplotyper {
 
   }
 
-  def eliminateAlleles(mutations : List[Mutation], alleles : List[Allele]) = {
+  def eliminateAlleles(mutations : List[Mutation], alleles : List[Allele]) =
     alleles filter { _ matches mutations }
-  }
 
   def sortByMutationFrequencies(mutations : List[Mutation], alleles : List[Allele]) = {
     val mutationsWithFrequency = mutations map { mutation =>
