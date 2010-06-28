@@ -1,6 +1,7 @@
 package com.locusdev.blast
 
 import java.io.{PrintWriter, BufferedWriter, FileWriter, File}
+import com.locusdev.util.CSVParser
 
 /**
  * Takes a Locus Amplicon Sequences spreadsheet and turns it into a bunch of individual FASTA files in a given

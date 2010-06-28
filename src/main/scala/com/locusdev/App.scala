@@ -9,7 +9,7 @@ import java.io.FileReader
  */
 object App {
   def main(args: Array[String]) {
-    val data = DbMhcParser.extractSequence(new FileReader("/home/dick/dev/Scala/LocusDev/hlaPrimerDesignTool/src/main/resources/dbMHC_allelev2.28.xml"),
+    val data = DbMhcParser.extractSequence(new FileReader("/Users/alexfurman/projects/locustools/src/main/resources/dbMHC_allelev2.28.xml"),
       "HLA-B", Array("Exon2", "Exon3"), 6)
 
     val haplotyper = new Haplotyper
@@ -22,7 +22,7 @@ object App {
 
     val mmap = haplotyper.mutationMap(mutations)
 
-    println("Answer: " + haplotyper.findAnswer(data, mmap, "B*1507"))
+    println("Answer: " + haplotyper.findAnswer(data, mmap, "B*1502"))
 
   }
 }

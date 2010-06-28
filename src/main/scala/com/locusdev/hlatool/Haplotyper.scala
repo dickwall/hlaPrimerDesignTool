@@ -85,7 +85,7 @@ class Haplotyper {
 
     for (i <- 0 to (mutationList.length - 1)) {
       //filter out redacted mutations
-      val mutations: Set[Char] = mutationList(i) - Haplotyper.redactedMutation - '*'
+      val mutations: Set[Char] = mutationList(i) - '*'
       if (mutations.size > 1) mmap += i -> mutations
     }
 
@@ -224,7 +224,9 @@ class Haplotyper {
  * A lightweight holder for sequence mutation details - the index of the possible mutation, and the specific
  * nucleotide at that location. Should be extended to include locus name, etc. in the future
  */
-case class Mutation(val index: Int, val nucleotide: Char)
+case class Mutation(val index: Int, val nucleotide: Char){
+  override def toString() = "[" + index + ":" + nucleotide + "]"
+}
 
 object Haplotyper {
   /**

@@ -1,4 +1,4 @@
-package com.locusdev.blast
+package com.locusdev.util
 
 import collection._
 import java.lang.String

@@ -1,4 +1,4 @@
-import com.locusdev.hlatool.{Mutation, Haplotyper}
+import com.locusdev.hlatool.{Block, Allele2, Mutation, Haplotyper}
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
@@ -24,6 +24,12 @@ class HaplotyperTest extends FunSuite with ShouldMatchers {
     intercept[IllegalArgumentException] {
       haplotyper.extractMutationSets(s1, s4)
     }
+  }
+
+  test ("Allele sequence not concatenated correctly"){
+    val blocks = List(new Block("A", "AAAAA"), new Block("B", "BBBBB"))
+    val allele = Allele2("Lalala", blocks)
+    allele.sequence should be ("AAAAABBBBB")
   }
 
   test ("Should return sets of mutations from pair of strings") {
