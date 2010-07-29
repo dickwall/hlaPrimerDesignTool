@@ -1,6 +1,7 @@
 package com.locusdev
 
 import com.locusdev.hlatool._
+import scala.collection._
 import java.io.FileReader
 
 /**
@@ -16,7 +17,7 @@ object App {
 
     //val signature = data("B*0766")
 
-    var list = data.values.toList
+    var list = combineSequence(data)
 
     val mutations = haplotyper.findAllMutations(list)
 
@@ -24,5 +25,11 @@ object App {
 
     println("Answer: " + haplotyper.findAnswer(data, mmap, "B*1502"))
 
+  }
+
+  def combineSequence(alleles: Map[String, Map[String, String]]) = {
+    val sequences =  mutable.ListBuffer[String]();
+
+    sequences.toList
   }
 }

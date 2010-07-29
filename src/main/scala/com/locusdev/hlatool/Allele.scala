@@ -8,7 +8,10 @@ package com.locusdev.hlatool
  * To change this template use File | Settings | File Templates.
  */
 
-case class Allele(name : String, sequence : String) {
+case class Allele(name : String, blocks : scala.collection.Map[String, String]) {
+
+  def sequence = Haplotyper.combineBlocks(blocks)
+
   def baseSequenced(index : Int) = {
     if (sequence.length < index - 1) throw new IllegalArgumentException(this + " sequence out of bounds: " + index + ", length: " + sequence.length)
     sequence.charAt(index) != '*'

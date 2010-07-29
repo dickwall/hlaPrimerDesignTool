@@ -25,12 +25,22 @@ object HLABDumper {
     //now iterate over the data and dump it out to stdout
 
     //print reference allele in full
-    val referenceSequence: String = data(args(0))
+    val referenceBlocks = data(args(0))
 
     print(args(0));
 
-    referenceSequence.foreach(c => print("\t" + c))
+    referenceBlocks.keys.toList.sort((e1, e2) => (e1 < e2)).foreach {
+      key =>
+        val referenceSequence = referenceBlocks(key)
+        for (i <- 0.until(referenceSequence.length)) {
+          print("\t" + referenceSequence.charAt(i))
+        }
+        //block separator
+        print("\t|")
+    }
+    //new line
     print("\n")
+
 
     data.foreach {
       tuple =>
@@ -38,16 +48,23 @@ object HLABDumper {
         if (tuple._1 != args(0)) {
           print(tuple._1)
 
-          val sequence = tuple._2
+          val blocks = tuple._2
+          blocks.keys.toList.sort((e1, e2) => (e1 < e2)).foreach {
+            key =>
+              var sequence = blocks(key)
+              var referenceSequence = referenceBlocks(key)
 
-          for (i <- 0.until(sequence.length)) {
-            print("\t")
-            if (sequence.charAt(i) == referenceSequence.charAt(i)) {
-              print("_")
-            }
-            else {
-              print(sequence.charAt(i))
-            }
+
+              for (i <- 0.until(sequence.length)) {
+                print("\t")
+                if (sequence.charAt(i) == referenceSequence.charAt(i)) {
+                  print("_")
+                }
+                else {
+                  print(sequence.charAt(i))
+                }
+              }
+              print("\t|")
           }
           print("\n")
         }

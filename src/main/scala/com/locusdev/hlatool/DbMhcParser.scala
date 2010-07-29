@@ -43,20 +43,20 @@ object DbMhcParser {
       allele => (allele \ "locus" \ "name").text.equals(locus)
     }
 
-    var data = immutable.Map[String, String]()
+    var data = immutable.Map[String, Map[String, String]]()
 
     for (allele <- alleles) {
+      var alleleMap = mutable.Map[String, String]()
       val name = (allele \ "name").text
+      data += name -> alleleMap
+
       val blocks = allele \ "blocks" \ "block"
       for (block <- blocks) {
         val blockName = (block \ "name").text
         if (dnaBlock contains blockName) {
           //if (blockName.equals(dnaBlock)) {
-          var sequence = (block \ "sequence").text
-          if (data contains name) {
-            sequence = data(name) + sequence
-          }
-            data += name -> sequence
+          val sequence = (block \ "sequence").text
+          alleleMap += blockName -> sequence
 
         }
       }

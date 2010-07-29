@@ -160,7 +160,7 @@ class Haplotyper {
     uniqueList.sortWith((l1, l2) => l1.length < l2.length)
   }
 
-  def findAnswer(data : Map[String, String], mutationMap : Map[Int, Set[Char]], allelePrefix : String) = {
+  def findAnswer(data : scala.collection.Map[String, scala.collection.Map[String, String]], mutationMap : Map[Int, Set[Char]], allelePrefix : String) = {
     // partition by matching prefix or not
     // first, convert the map to a list of Allele case class instances
     val allelesList = data.map { case(k,v) => Allele(k, v) }
@@ -236,4 +236,10 @@ object Haplotyper {
   val redactedMutation = '*'
 
   val maxChainLength = 5;
+
+  def combineBlocks(blocks: scala.collection.Map[String, String]) = {
+    val builder = StringBuilder
+    blocks.keys.toList.sort((e1, e2) => (e1 < e2)).foreach(builder + blocks(_))
+    builder.toString
+  }
 }
