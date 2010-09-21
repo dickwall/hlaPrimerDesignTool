@@ -8,7 +8,9 @@ import java.lang.String
  */
 
 object CSVParser {
-  def parse(lines: Iterator[String], separator: String) = {
+  def parse(lines: Iterator[String], separator: String): List[Map[String, String]] = parse(lines, separator, true)
+
+  def parse(lines: Iterator[String], separator: String, strictLengths: Boolean): List[Map[String, String]] = {
     val results = new mutable.ListBuffer[Map[String, String]]
 
     if (!lines.hasNext) {
@@ -25,7 +27,7 @@ object CSVParser {
 
       val map = new mutable.HashMap[String, String]
 
-      if (tokens.length != headerTokens.length) {
+      if (strictLengths && tokens.length != headerTokens.length) {
         throw new IllegalStateException("Tokens mismatch: header has " + headerTokens.length + " tokens while line " +
                 counter + " has " + tokens.length + " tokens");
       }

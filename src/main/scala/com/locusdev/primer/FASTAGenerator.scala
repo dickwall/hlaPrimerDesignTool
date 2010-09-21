@@ -1,4 +1,4 @@
-package com.locusdev.blast
+package com.locusdev.primer
 
 import java.io.{PrintWriter, BufferedWriter, FileWriter, File}
 import com.locusdev.util.CSVParser
@@ -34,7 +34,7 @@ object FASTAGenerator {
     }
 
     //open the file
-    val lines = io.Source.fromPath(args(0)).getLines("\n")
+    val lines = io.Source.fromFile(args(0)).getLines()
     val parsed: List[scala.collection.Map[String, String]] = CSVParser.parse(lines, "\t");
 
     parsed.foreach {

@@ -21,5 +21,7 @@ case class Allele(name : String, blocks : scala.collection.Map[String, String]) 
     !(mutations exists { mutation => !matches(mutation) })
   }
 
+  
+
   def matches(mutation : Mutation) : Boolean = (sequence.charAt(mutation.index) == mutation.nucleotide)
 }

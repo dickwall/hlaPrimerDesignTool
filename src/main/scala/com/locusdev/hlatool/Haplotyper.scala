@@ -238,7 +238,7 @@ object Haplotyper {
   val maxChainLength = 5;
 
   def combineBlocks(blocks: scala.collection.Map[String, String]) = {
-    val builder = StringBuilder
+    val builder = new StringBuilder
     blocks.keys.toList.sort((e1, e2) => (e1 < e2)).foreach(builder + blocks(_))
     builder.toString
   }

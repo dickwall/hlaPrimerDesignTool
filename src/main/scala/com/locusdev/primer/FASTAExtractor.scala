@@ -1,9 +1,10 @@
-package com.locusdev.blast
+package com.locusdev.primer
 
-import java.io.File
 import io.Source
 import java.lang.String
 import collection.Iterator
+import java.io.File
+import com.locusdev.model.Exon
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,23 +14,29 @@ import collection.Iterator
  * To change this template use File | Settings | File Templates.
  */
 
+
+
 object FASTAExtractor {
   def main(args: Array[String]) {
-
     if (args.size != 7) {
-      //only print the usage when we don't have the right arguments 
+      //only print the usage when we don't have the right arguments
       printUsage();
       System.exit(0)
     }
-
     //check that the chromosome dir exists
     val chromosomeDir = new File(args(0))
+    val exon = new Exon(args(6), args(1), args(2).toInt, args(3).toInt, None, None)
+    println(P3Parser.createP3Input(chromosomeDir, exon, args(4).toInt, args(5).toInt))
+  }
+
+
+  def getFullChromosomeSequence(chromosomeDir: File, chromosome: String): String = {
     if (!chromosomeDir.exists || chromosomeDir.isFile) {
       throw new IllegalStateException(chromosomeDir.getAbsolutePath + " is not a directory")
     }
 
     //look for the fasta file
-    val chromFile = new File(chromosomeDir, if (args(1).startsWith("chr")) {args(1)} else {"chr" + args(1)} + ".fa")
+    val chromFile = new File(chromosomeDir, if (chromosome.startsWith("chr")) chromosome else {"chr" + chromosome} + ".fa")
     if (!chromFile.exists || chromFile.isDirectory) {
       throw new IllegalStateException(chromFile.getAbsolutePath + " is not a file")
     }
@@ -49,25 +56,18 @@ object FASTAExtractor {
     }
 
     val sequence = builder.toString
-
-    //now, extract the piece we need
-    val extracted = extractSequence(sequence, args(2).toInt, args(3).toInt, args(4).toInt, args(5).toInt, args(6))
-
+    sequence
   }
 
-  def extractSequence(sequence: String, startPosition: Int, endPosition: Int, margin: Int, size: Int, id: String) = {
-    val targetLength: Int = endPosition - startPosition
-    val start = startPosition - margin - size;
-    val end = endPosition + margin + size;
+  def extractSequence(chromosomeDir: File, chromosome: String, startPosition: Int, endPosition: Int): String = {
+    extractSequence(getFullChromosomeSequence(chromosomeDir, chromosome), startPosition, endPosition)
+  }
+
+  def extractSequence(sequence: String, start: Int, end: Int) = {
+
 
     try {
       val extracted = sequence.substring(start, end)
-
-      println("PRIMER_SEQUENCE_ID=" + id)
-      println("SEQUENCE_TEMPLATE=" + extracted)
-      println("SEQUENCE_TARGET=" + size + "," + (endPosition - startPosition + margin * 2))
-      println("=")
-
       extracted
     }
     catch {

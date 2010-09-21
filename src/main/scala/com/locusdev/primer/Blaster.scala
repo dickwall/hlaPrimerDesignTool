@@ -1,4 +1,4 @@
-package com.locusdev.blast
+package com.locusdev.primer
 
 import collection.mutable.ListBuffer
 import java.lang.String
@@ -52,7 +52,7 @@ object Blaster {
         val primer1: String = sequences(x).substring(0, sequences(x).indexOf('.'))
         val primer2: String = sequences(y).substring(0, sequences(y).indexOf('.'))
         val outName = primer1 + "-" + primer2 + ".out"
-        val command = "/usr/local/ncbi/blast/bin/blastn " +
+        val command = "/usr/local/ncbi/primer/bin/blastn " +
                 " -query " + inputDir.getAbsolutePath + File.separator + sequences(x) +
                 " -subject " + inputDir.getAbsolutePath + File.separator + sequences(y) + " -outfmt 10 " +
                 "-out " + outputDir + File.separator + outName + " -perc_identity 90";
@@ -64,7 +64,7 @@ object Blaster {
         }
 
         //now get the number of rows from the output file, that is out hit score
-        val lines = io.Source.fromPath(outputDir + File.separator + outName).getLines("\n")
+        val lines = io.Source.fromFile(outputDir + File.separator + outName).getLines()
         val summary = primer1 + "\t" + primer2 + "\t" + lines.length
         summaryWriter.println(summary)
         summaryWriter.flush
