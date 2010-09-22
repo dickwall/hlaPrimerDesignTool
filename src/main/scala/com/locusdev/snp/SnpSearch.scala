@@ -23,7 +23,7 @@ object SnpSearch {
     //do we have a valid header
     val header = lines.next
     require(header startsWith "PRIMER_SEQUENCE\tPRIMER_START_POSITION\tPRIMER_PENALTY\tPRIMER_TM\tPRIMER_GC_PERCENT", "Unexpected header: " + header)
-    output.println(header + "\tANY SHORT HITS\tANYLONGHITS\tREAL SHORT HITS\tREAL LONG HITS")
+    output.println(header + "\tANY SHORT SNPS\tANY LONG SNPS\tREAL SHORT SNPS\tREAL LONG SNPS")
 
     //now, parse out the primers and
     //group the primers by chromosome. currently, each file will only contain primers on a single chromosome, but there's
