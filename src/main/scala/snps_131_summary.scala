@@ -11,6 +11,8 @@ import java.io.File
  * Quick script to do some statistics on the SNPS131 data file. Decided to do things this way and not
  * through SQL to save time in the short-term. Will likely need a more permanent solution for this sort
  * of thing in the future.
+ *
+ * This script is an Abomination to the Lord. Fortunately, we're not likely to ever need to reuse it.
  */
 
 val fileName = if (args.size > 0) args(0) else "";
