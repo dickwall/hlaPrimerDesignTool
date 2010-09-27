@@ -1,7 +1,7 @@
 package com.locusdev.primer
 
 import io.Source
-import com.locusdev.util.CSVParser
+import com.locusdev.util.CSVMapParser
 import com.locusdev.model.Exon
 import scala.collection._
 
@@ -30,7 +30,7 @@ object ExonListParser {
 
   def parseExonList(lines: Iterator[String]): List[Exon] = {
     //we allow for optional columns
-    val parsedLines = CSVParser.parse(lines, "\t", false)
+    val parsedLines = CSVMapParser.parse(lines, "\t", false)
     val parsed = parsedLines.map {
       line =>
         requireColumn(line, "Gene_Amplicon")

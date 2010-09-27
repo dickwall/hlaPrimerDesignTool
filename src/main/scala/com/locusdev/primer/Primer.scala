@@ -45,10 +45,17 @@ Option[Int], val anyLongSnpHits: Option[Int], val realShortSnpHits: Option[Int],
 
 object Primer {
   def apply(primerCsv: String) = {
+
     val tokens = primerCsv.split("\t")
 
     //valid token lengths depending on which state the primer table is in 14 for nw, 16 for post-blat, and 20 for post-snp-filter
-    require(tokens.length == 14 || tokens.length == 16 || tokens.length == 20, "Unexpected primer line: " + primerCsv)
+    require(tokens.length == 14 || tokens.length == 16 || tokens.length == 20, "Unexpected primer line: " + primerCsv + ", length " + tokens.length)
+//    var c = 0;
+//    tokens.foreach{
+//      token =>
+//      println(c + " = " + token)
+//      c += 1
+//    }
 
     //optional blat fields
     val perfectMatches = if (tokens.length > 14) Option(tokens(14).toInt) else None
@@ -59,6 +66,8 @@ object Primer {
     val anyLongHits = if (tokens.length > 16) Option(tokens(17).toInt) else None
     val realShortHits = if (tokens.length > 16) Option(tokens(18).toInt) else None
     val realLongHits = if (tokens.length > 16) Option(tokens(19).toInt) else None
+
+
 
 
     new Primer(tokens(0), tokens(1).toInt, tokens(2).toDouble, tokens(3).toDouble, tokens(4).toDouble, tokens(5).toDouble,

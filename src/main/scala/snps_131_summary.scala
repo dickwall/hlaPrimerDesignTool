@@ -3,7 +3,7 @@ exec scala "$0" "$@"
 !#
 
 
-import com.locusdev.snp.{Snp, SnpParser}
+import com.locusdev.snp.SnpParser
 import java.lang.String
 import io.Source
 import java.io.File

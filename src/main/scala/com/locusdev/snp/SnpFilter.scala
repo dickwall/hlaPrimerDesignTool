@@ -1,7 +1,7 @@
 package com.locusdev.snp
 
 import java.io.File
-import com.locusdev.util.CSVParser
+import com.locusdev.util.CSVMapParser
 import io.Source
 
 /**
@@ -44,7 +44,7 @@ object SnpFilter {
    */
   def apply(rulesFile: File) = {
     require(rulesFile.exists, "Filter rules file does not exist: " + rulesFile.getAbsolutePath)
-    val tokens = CSVParser.parse(Source.fromFile(rulesFile).getLines, "\t")
+    val tokens = CSVMapParser.parse(Source.fromFile(rulesFile).getLines, "\t")
     val rules = tokens.map(ruleFromTokens(_))
     new SnpFilter(rules)
   }

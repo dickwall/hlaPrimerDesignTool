@@ -7,7 +7,7 @@ import java.lang.String
  * Simple parser for the CSV file format adapted from
  */
 
-object CSVParser {
+object CSVMapParser {
   def parse(lines: Iterator[String], separator: String): List[Map[String, String]] = parse(lines, separator, true)
 
   def parse(lines: Iterator[String], separator: String, strictLengths: Boolean): List[Map[String, String]] = {

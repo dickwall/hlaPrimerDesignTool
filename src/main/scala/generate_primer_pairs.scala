@@ -4,7 +4,7 @@ exec scala "$0" "$@"
 
 import com.locusdev.primer.{Primer, PrimerTableParser}
 import io.Source
-import java.io.{PrintStream, PrintWriter, FileWriter, File}
+import java.io.{PrintStream, File}
 
 if (args.size < 1) {
   println("Usage: generate_primer_pairs input_file output.file")
@@ -13,44 +13,50 @@ if (args.size < 1) {
   System.exit(0)
 }
 
-val input = new File(args(0))
-require(input.exists, input.getAbsolutePath + " does not exist")
-require(input.isFile, input.getAbsolutePath + " does is not a file")
+val inputFile = new File(args(0))
+require(inputFile.exists, inputFile.getAbsolutePath + " does not exist")
 
-val out = {
-  if(args.size > 1){
-    new PrintStream(new File(args(1)))
-  }
-  else{
-    System.out
+if (inputFile.isFile) {
+  require(args.size == 2, "Output file name is required for a single-file input")
+  process(inputFile, new File(args(1)))
+}
+else {
+  val files = inputFile.listFiles.filter(_.getName.endsWith(".primer.txt")).toList
+  require(!files.isEmpty, inputFile.getAbsolutePath + " does not contain any primer files")
+  println("Fount Primer Files: " + files.length)
+  files.foreach{
+    primerFile =>
+    process(primerFile, new File(inputFile, primerFile.getName.substring(0, primerFile.getName.indexOf(".")) + ".primer.pairs.txt"))
   }
 }
 
-//parse out all the primers
-val primers = PrimerTableParser.parse(Source.fromFile(input).getLines).toList.partition(_.direction == "forward")
-val forwardPrimers = primers._1
-val reversePrimers = primers._2
+def process(input: File, output: File) {
+  println("Processing: " + input.getAbsolutePath + ", output = " + output.getName)
+  val out = new PrintStream(output)
 
-println("Found forward primers: " + forwardPrimers.size)
-println("Found reverse primers: " + reversePrimers.size)
+  //parse out all the primers
+  val primers = PrimerTableParser.parse(Source.fromFile(input).getLines.filter(_.split("\t").length != 1)).toList.partition(_.direction == "forward")
+  val forwardPrimers = primers._1
+  val reversePrimers = primers._2
 
-//go through all the forward primers and pair them up with all the reverse primers
-val primerPairs = forwardPrimers.map {
-  forward =>
-    reversePrimers.map(new PrimerPair(forward, _))
-}.reduceLeft(_ ::: _)
+  println("Found forward primers: " + forwardPrimers.size)
+  println("Found reverse primers: " + reversePrimers.size)
 
-out.println("NUMBER\tFORWARD PRIMER\tREVERSE PRIMER\tLENGTH")
+  //go through all the forward primers and pair them up with all the reverse primers
+  val primerPairs = forwardPrimers.map {
+    forward =>
+      reversePrimers.map(new PrimerPair(forward, _))
+  }.reduceLeft(_ ::: _)
 
-var counter = 0
-primerPairs.sortBy[Int](_.length).foreach{
-  primer =>
-  counter += 1
-  out.println(counter + "\t" + primer.toString)
-}
+  out.println("NUMBER\tFORWARD PRIMER\tREVERSE PRIMER\tLENGTH")
 
-if(args.size > 1){
-  //we were printing to a file and need to close
+  var counter = 0
+  primerPairs.sortBy[Int](_.length).foreach {
+    primer =>
+      counter += 1
+      out.println(counter + "\t" + primer.toString)
+  }
+
   out.close
 }
 

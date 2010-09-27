@@ -1,7 +1,7 @@
 package com.locusdev.primer
 
 import java.io.{PrintWriter, BufferedWriter, FileWriter, File}
-import com.locusdev.util.CSVParser
+import com.locusdev.util.CSVMapParser
 
 /**
  * Takes a Locus Amplicon Sequences spreadsheet and turns it into a bunch of individual FASTA files in a given
@@ -35,7 +35,7 @@ object FASTAGenerator {
 
     //open the file
     val lines = io.Source.fromFile(args(0)).getLines()
-    val parsed: List[scala.collection.Map[String, String]] = CSVParser.parse(lines, "\t");
+    val parsed: List[scala.collection.Map[String, String]] = CSVMapParser.parse(lines, "\t");
 
     parsed.foreach {
       line =>

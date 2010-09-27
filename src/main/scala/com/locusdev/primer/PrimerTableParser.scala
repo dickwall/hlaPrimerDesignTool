@@ -12,7 +12,7 @@ package com.locusdev.primer
 object PrimerTableParser {
   def parse(lines: Iterator[String]) = {
     val header = lines.next
-    require(header startsWith "PRIMER_SEQUENCE\tPRIMER_START_POSITION\tPRIMER_PENALTY\tPRIMER_TM\tPRIMER_GC_PERCENT", "Unexpected header: " + header)
+    require(header startsWith "PRIMER_SEQUENCE", "Unexpected header: " + header)
     lines.map(Primer(_))
   }
 }
