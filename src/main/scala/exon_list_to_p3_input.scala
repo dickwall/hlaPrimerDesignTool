@@ -18,7 +18,7 @@ if (args.length < 2) {
 
 val exons = ExonListParser.parseExonList(args(0))
 
-val results = P3Parser.createP3Input(new File(args(1)), exons, 10, 1000)
+val results = P3Parser.createP3Input(new File(args(1)), exons, 10, 10000)
 
 results.keys.foreach {
   exon: Exon =>

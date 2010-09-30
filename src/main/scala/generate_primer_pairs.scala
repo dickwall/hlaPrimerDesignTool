@@ -21,12 +21,13 @@ if (inputFile.isFile) {
   process(inputFile, new File(args(1)))
 }
 else {
-  val files = inputFile.listFiles.filter(_.getName.endsWith(".primer.txt")).toList
+  val files = inputFile.listFiles.filter{
+    file =>file.getName.endsWith(".txt") && !file.getName.endsWith("pairs.txt")}.toList
   require(!files.isEmpty, inputFile.getAbsolutePath + " does not contain any primer files")
   println("Fount Primer Files: " + files.length)
-  files.foreach{
+  files.foreach {
     primerFile =>
-    process(primerFile, new File(inputFile, primerFile.getName.substring(0, primerFile.getName.indexOf(".")) + ".primer.pairs.txt"))
+      process(primerFile, new File(inputFile, primerFile.getName.substring(0, primerFile.getName.indexOf(".")) + ".primer.pairs.txt"))
   }
 }
 
@@ -48,7 +49,7 @@ def process(input: File, output: File) {
       reversePrimers.map(new PrimerPair(forward, _))
   }.reduceLeft(_ ::: _)
 
-  out.println("NUMBER\tFORWARD PRIMER\tREVERSE PRIMER\tLENGTH")
+  out.println("NUMBER\tFORWARD PRIMER\tREVERSE PRIMER\tLENGTH\tFORWARD START\tREVERSE START")
 
   var counter = 0
   primerPairs.sortBy[Int](_.length).foreach {
@@ -61,7 +62,7 @@ def process(input: File, output: File) {
 }
 
 class PrimerPair(val forward: Primer, val reverse: Primer) {
-  override def toString = forward.sequence + "\t" + reverse.sequence + "\t" + length
+  override def toString = forward.sequence + "\t" + reverse.sequence + "\t" + length + "\t" + forward.blockStartPosition + "\t" + reverse.blockStartPosition
 
   val length = reverse.endPosition - forward.startPosition
 }

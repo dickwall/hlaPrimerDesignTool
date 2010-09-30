@@ -39,6 +39,7 @@ object SnpSearch {
     chromosomes.foreach {
       chromosome =>
       //read out all the files for the chromosome
+        val start = System.currentTimeMillis
         println("Parsing snps for chromosome " + chromosome)
         val anyShort = parseSnps(new File(snpFilesDir, "any_chr" + chromosome + "_short.txt")).toList
         val anyLong = parseSnps(new File(snpFilesDir, "any_chr" + chromosome + "_long.txt")).toList
@@ -60,16 +61,21 @@ object SnpSearch {
 
           val filled = primer.setSnpHits(anyShortHits, anyLongHits, realShortHits, realLongHits)
           output.println(filled.toTableLine)
-
-          
         }
+      println("Took " + ((System.currentTimeMillis - start) / 60000) + " minutes" )
     }
 
 
   }
 
   def countHits(primer: Primer, snps: List[CondensedSnp]) = {
-    snps.map(overlaps(_,primer)).reduceLeft(_ + _)
+    var count = 0;
+
+    snps.foreach(count += overlaps(_, primer))
+
+    count
+
+    //snps.map(overlaps(_,primer)).reduceLeft(_ + _)
   }
 
   def overlaps(snp: CondensedSnp, primer: Primer) = {

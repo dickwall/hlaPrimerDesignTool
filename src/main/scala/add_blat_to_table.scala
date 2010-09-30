@@ -2,8 +2,9 @@
 exec scala "$0" "$@"
 !#
 import collection.immutable.List
+import collection.mutable.ArrayBuffer
 import io.Source
-import java.io.{PrintWriter, FileWriter, File}
+import java.io.{FileWriter, PrintWriter, File}
 
 if (args.length < 1) {
   println("Usage: add_blat_to_table inputDir")
@@ -40,6 +41,7 @@ def processBlatOutput(blatFile: File, primerTableFile: File, outputFile: File) =
   //get a list of hits per primer
   val blatHits = parseBlatOuptut(Source.fromFile(blatFile).getLines())
 
+
   //now, go through the table line-by-line and add hits information towards the end of each line
   val tableLines = Source.fromFile(primerTableFile).getLines
 
@@ -51,8 +53,15 @@ def processBlatOutput(blatFile: File, primerTableFile: File, outputFile: File) =
   out.println("\tPERFECT MATCHES\tNEAR MATCHES")
 
   //go line-by-line
+  var counter = 0
+  println("processing primer table")
   tableLines.filter(_.trim.length > 0).foreach {
     line =>
+      counter += 1
+      if (counter % 500 == 0) {
+        println("\tlines processed: " + counter)
+      }
+
       val primer = line.split("\t")(0)
 
       //transfer the line
@@ -83,33 +92,56 @@ def processBlatOutput(blatFile: File, primerTableFile: File, outputFile: File) =
 
       out.println("\t" + perfectMatches + "\t" + nearMatches)
   }
+  println("done processing primer table")
   out.close
 
 }
 
 def parseBlatOuptut(lines: Iterator[String]) = {
+  println("Parsing blat output")
   val resultsMap = new collection.mutable.HashMap[String, BlatHits]
 
-  val linesList = lines.toList
+  //skip header
+  (lines.next)
+  (lines.next)
+  (lines.next)
+  (lines.next)
+  (lines.next)
 
-  val truncated = linesList.slice(5, linesList.length - 1)
 
-  for (x <- 0 until truncated.length) {
-    if (truncated(x).split("\t").length < 10) {
-      println(x + ": " + truncated(x))
-    }
+  println("about to group by primer")
+  val mapped = new collection.mutable.HashMap[String, ArrayBuffer[Array[String]]]
+
+  var counter = 0
+  lines.foreach {
+    line =>
+      counter += 1
+      if (counter % 100000 == 0) {
+        println("\tlines processed: " + counter)
+      }
+      val tokens = line.split("\t")
+      if (!mapped.contains(tokens(9))) {
+        mapped += tokens(9) -> new collection.mutable.ArrayBuffer[Array[String]]
+      }
+      mapped(tokens(9)) += (tokens)
   }
 
+  println("counverting into objects")
 
-  val mapped = truncated.map(_.split("\t")).groupBy(_(9))
+  counter = 0
 
   val hits = mapped.map {
     case (primer, hitsList) => {
+      counter += 1
+      if (counter % 1000 == 0) {
+        println("\tprimers processed: " + counter)
+      }
       val sortedHits = hitsList.sortBy(qscore(_)).toList.reverse
       (primer, new BlatHits(primer, sortedHits.head, sortedHits.tail))
     }
   }
 
+  println("done converting into objects")
   hits
 }
 
