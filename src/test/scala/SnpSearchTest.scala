@@ -16,7 +16,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 class SnpSearchTest extends FunSuite with ShouldMatchers {
   //primer from 100 to 150
-  val primer = Primer("GATGGGAGTCAGGGAAACTGTCCTT\t18758\t6.44E-4\t65.999\t52.0\t0.13\t0.0\t43.33\t3.36\tAPOE_03<19:45401006,45421219>\t19\t100\t150\t1\t0\t0\t0\t0\t0")
+  val primer = Primer("GATGGGAGTCAGGGAAACTGTCCTT\t18758\t6.44E-4\t65.999\t52.0\t0.13\t0.0\t43.33\t3.36\tAPOE_03<19:45401006,45421219>\t19\t100\t150\treverse\t1\t0\t0\t0\t0\t0")
   
   test("middle"){
     SnpSearch.overlaps(new CondensedSnp("lalal", "chr1", 120, 121), primer) should be (1)

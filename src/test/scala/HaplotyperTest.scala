@@ -36,14 +36,14 @@ class HaplotyperTest extends FunSuite with ShouldMatchers {
     val m1 = haplotyper.extractMutationSets(s1, s2)
     val m2 = haplotyper.extractMutationSets(s1, s3)
 
-    m1 should be (Array(Set('g'), Set('a'), Set('t'), Set('t','c'), Set('a'), Set('c','t'), Set('c'), Set('a')))
-    m2 should be (Array(Set('g'), Set('a'), Set('t'), Set('t','-'), Set('a'), Set('c'), Set('c'), Set('a')))
+    m1 should be (Vector(Set('g'), Set('a'), Set('t'), Set('t','c'), Set('a'), Set('c','t'), Set('c'), Set('a')))
+    m2 should be (Vector(Set('g'), Set('a'), Set('t'), Set('t','-'), Set('a'), Set('c'), Set('c'), Set('a')))
   }
 
   test ("Should return sets of mutations from list of sequences") {
     val m1 = haplotyper.findAllMutations(List(s1, s2, s3))
 
-    m1 should be (Array(Set('g'), Set('a'), Set('t'), Set('t','c','-'), Set('a'), Set('c','t'), Set('c'), Set('a')))
+    m1 should be (Vector(Set('g'), Set('a'), Set('t'), Set('t','c','-'), Set('a'), Set('c','t'), Set('c'), Set('a')))
   }
 
   test ("Should not compare list of sequences where some of the sequences differ in length") {
