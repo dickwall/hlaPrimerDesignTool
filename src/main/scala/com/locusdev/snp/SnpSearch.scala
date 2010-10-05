@@ -62,7 +62,7 @@ object SnpSearch {
           val filled = primer.setSnpHits(anyShortHits, anyLongHits, realShortHits, realLongHits)
           output.println(filled.toTableLine)
         }
-      println("Took " + ((System.currentTimeMillis - start) / 60000) + " minutes" )
+      println("Took " + ((System.currentTimeMillis - start) / 60000.0) + " minutes" )
     }
 
 
