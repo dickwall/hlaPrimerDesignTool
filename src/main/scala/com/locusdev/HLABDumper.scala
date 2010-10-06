@@ -29,7 +29,7 @@ object HLABDumper {
 
     print(args(0));
 
-    referenceBlocks.keys.toList.sort((e1, e2) => (e1 < e2)).foreach {
+    referenceBlocks.keys.toList.sorted.foreach {
       key =>
         val referenceSequence = referenceBlocks(key)
         for (i <- 0.until(referenceSequence.length)) {
@@ -49,7 +49,7 @@ object HLABDumper {
           print(tuple._1)
 
           val blocks = tuple._2
-          blocks.keys.toList.sort((e1, e2) => (e1 < e2)).foreach {
+          blocks.keys.toList.sorted.foreach {
             key =>
               var sequence = blocks(key)
               var referenceSequence = referenceBlocks(key)
