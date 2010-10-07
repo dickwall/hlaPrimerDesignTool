@@ -6,8 +6,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 
 /**
- * 
- *
  * User: afurman
  * Date: Sep 16, 2010
  * Time: 3:24:13 PM

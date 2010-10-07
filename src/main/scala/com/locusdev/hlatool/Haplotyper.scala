@@ -2,6 +2,7 @@ package com.locusdev.hlatool
 
 import collection.mutable.{HashSet, ListBuffer}
 import collection.immutable.Set
+import scala.annotation.tailrec
 
 /**
  * Identify and optimize haplotypes
@@ -190,8 +191,9 @@ class Haplotyper {
     greedyGuess(commonMutationsForIncluded, excludedAlleles.toList)
   }
 
-  
-  def greedyGuess(mutations : List[Mutation], excludedAlleles : List[Allele], runningAnswer : List[Mutation] = Nil) : List[Mutation] = {
+
+  @tailrec
+  final def greedyGuess(mutations : List[Mutation], excludedAlleles : List[Allele], runningAnswer : List[Mutation] = Nil) : List[Mutation] = {
 
     excludedAlleles.size match {
       case 0 => runningAnswer
